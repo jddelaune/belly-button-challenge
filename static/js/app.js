@@ -40,12 +40,16 @@ function updateDashboard(selectedID) {
             orientation: 'h'
         };
 
-        let data = [trace1];
+        let bardata = [trace1];
         let layout = {
             title: "Top 10 OTUs Present in Individual"
         }
 
-        Plotly.newPlot("bar", data, layout);
+        Plotly.newPlot("bar", bardata, layout);
+    }
+
+    function buildDemogPane(selectedID, ethnicity, gender, age, location, bbtype, wfreq) {
+
     }
 
    
@@ -56,17 +60,14 @@ function updateDashboard(selectedID) {
         }
     
         let selectedData = data.samples.filter(selectFunc);
-        console.log(selectedData);
         let sampleValues = selectedData[0].sample_values;
         let otuIDs = selectedData[0].otu_ids;
         let otuLabels = selectedData[0].otu_labels;
 
         buildBarChart(sampleValues, otuIDs, otuLabels);
         // console.log(`Sample values for ${selectedID}: ${sampleValues}`)
-        // return sampleValues, otuIDs, otuLabels
     }
 
-     // bar chart
 
 }
 
