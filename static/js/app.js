@@ -1,11 +1,60 @@
 // Use D3 library to read in samples.json from https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json
 
 const URL = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json";
-let selectedID = ""
-let data = []
+// var selectedID = ""
+var BBDATA = {} // container for global variables
+
+function storeBBData(data) {
+    // stores all the global variables we will need as properties on the BBDATA object
+    // build off of old getData function below
+       
+    // function getData(data) {
+    //     // console.log(data.samples.id)
+    //      function selectFunc(samples) {
+    //          return samples.id == selectedID;
+    //      }
+     
+    //      let selectedData = data.samples.filter(selectFunc);
+    //      let sampleValues = selectedData[0].sample_values;
+    //      let otuIDs = selectedData[0].otu_ids;
+    //      let otuLabels = selectedData[0].otu_labels;
+ 
+    //      buildBarChart(sampleValues, otuIDs, otuLabels);
+         // console.log(`Sample values for ${selectedID}: ${sampleValues}`)
+    //     }
+}
+
+function buildBarChart(values, labels, hovertext) { // probably we will change this to just pass in selectedID
+        
+    let topTenLabels = labels.slice(0,10).map(id => `OTU ${id}`).reverse();
+    let topTenValues = values.slice(0,10).reverse();
+    let topTenHovertext = hovertext.slice(0,10).reverse();
+
+    let trace1 = {
+        x: topTenValues,
+        y: topTenLabels,
+        type: 'bar',
+        text: topTenHovertext,
+        orientation: 'h'
+    };
+
+    let bardata = [trace1];
+    let layout = {
+        title: "Top 10 OTUs Present in Individual"
+    }
+
+    Plotly.newPlot("bar", bardata, layout);
+}
+
+function buildDemogPane(selectedID, ethnicity, gender, age, location, bbtype, wfreq) {
+    // builds the Demographics Pane... we probably don't have to pass in all those parameters individually
+}
+
+function buildBubbleChart(whateverParamsNeeded) {
+    // builds the bubble chart
+}
 
 // optionChanged function does what happens when you change the number in the selection box
-// do we actually need a separate function for this?
 function optionChanged(selectedID) {
     updateDashboard(selectedID);
 }
@@ -16,6 +65,7 @@ function init(data) {
     let subjectIDs = data.names;
     let selectedID = data.names[0];
     // make the dropdown menu with subjectIDs in it
+    storeBBData(data); // call this function to do all the other data setup we need
     console.log("going to updateDashboard() with selectedID as" + selectedID)
     updateDashboard(selectedID);
 }
@@ -24,50 +74,9 @@ function init(data) {
 
 function updateDashboard(selectedID) {
     
-    d3.json(URL).then(getData); // getData function puts the data into the variables
-    
-    function buildBarChart(values, labels, hovertext) { 
-        
-        let topTenLabels = labels.slice(0,10).map(id => `OTU ${id}`).reverse();
-        let topTenValues = values.slice(0,10).reverse();
-        let topTenHovertext = hovertext.slice(0,10).reverse();
-
-        let trace1 = {
-            x: topTenValues,
-            y: topTenLabels,
-            type: 'bar',
-            text: topTenHovertext,
-            orientation: 'h'
-        };
-
-        let bardata = [trace1];
-        let layout = {
-            title: "Top 10 OTUs Present in Individual"
-        }
-
-        Plotly.newPlot("bar", bardata, layout);
-    }
-
-    function buildDemogPane(selectedID, ethnicity, gender, age, location, bbtype, wfreq) {
-
-    }
-
-   
-    function getData(data) {
-       // console.log(data.samples.id)
-        function selectFunc(samples) {
-            return samples.id == selectedID;
-        }
-    
-        let selectedData = data.samples.filter(selectFunc);
-        let sampleValues = selectedData[0].sample_values;
-        let otuIDs = selectedData[0].otu_ids;
-        let otuLabels = selectedData[0].otu_labels;
-
-        buildBarChart(sampleValues, otuIDs, otuLabels);
-        // console.log(`Sample values for ${selectedID}: ${sampleValues}`)
-    }
-
+    // I thiiiink it makes the most sense to simply call each function here and
+    // pull the properties needed for each individual function inside that function rather
+    // than in a separate function or in this one.  I think.
 
 }
 
