@@ -1,34 +1,16 @@
 // Use D3 library to read in samples.json from https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json
 
 const URL = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json";
-// var selectedID = ""
-var BBDATA = {} // container for global variables
 
-function storeBBData(data) {
-    // stores all the global variables we will need as properties on the BBDATA object
-    // build off of old getData function below
-       
-    // function getData(data) {
-    //     // console.log(data.samples.id)
-    //      function selectFunc(samples) {
-    //          return samples.id == selectedID;
-    //      }
-     
-    //      let selectedData = data.samples.filter(selectFunc);
-    //      let sampleValues = selectedData[0].sample_values;
-    //      let otuIDs = selectedData[0].otu_ids;
-    //      let otuLabels = selectedData[0].otu_labels;
- 
-    //      buildBarChart(sampleValues, otuIDs, otuLabels);
-         // console.log(`Sample values for ${selectedID}: ${sampleValues}`)
-    //     }
-}
+function buildBarChart(selectedData) { 
 
-function buildBarChart(values, labels, hovertext) { // probably we will change this to just pass in selectedID
-        
-    let topTenLabels = labels.slice(0,10).map(id => `OTU ${id}`).reverse();
-    let topTenValues = values.slice(0,10).reverse();
-    let topTenHovertext = hovertext.slice(0,10).reverse();
+    console.log("selectedData for bar chart" + selectedData);
+    let sampleValues = selectedData.sample_values;
+    let otuIDs = selectedData.otu_ids;
+    let otuLabels = selectedData.otu_labels;    
+    let topTenLabels = otuIDs.slice(0,10).map(id => `OTU ${id}`).reverse();
+    let topTenValues = sampleValues.slice(0,10).reverse();
+    let topTenHovertext = otuLabels.slice(0,10).reverse();
 
     let trace1 = {
         x: topTenValues,
@@ -46,42 +28,84 @@ function buildBarChart(values, labels, hovertext) { // probably we will change t
     Plotly.newPlot("bar", bardata, layout);
 }
 
-function buildDemogPane(selectedID, ethnicity, gender, age, location, bbtype, wfreq) {
-    // builds the Demographics Pane... we probably don't have to pass in all those parameters individually
+function buildDemogPane(selectedMeta) { 
+    let panel = d3.select("#sample-metadata");
+    panel.html("");
+    Object.entries(selectedMeta).forEach(([key, value]) => {
+        panel.append("h6").text(`${key.toUpperCase()}: ${value}`);
+    });
 }
 
-function buildBubbleChart(whateverParamsNeeded) {
-    // builds the bubble chart
+function buildBubbleChart(selectedData) {
+    let sampleValues = selectedData.sample_values;
+    let otuIDs = selectedData.otu_ids;
+    let otuLabels = selectedData.otu_labels;  
+ 
+    let trace = {
+        x: otuIDs,
+        y: sampleValues,
+        text: otuLabels,
+        mode: "markers",
+        marker: {
+            size: sampleValues,
+            color: otuIDs,
+            colorscale: "Earth"
+        }
+    };
+    let chartdata = [trace];
+
+    let layout = {
+        title: "Bacteria found in Sample",
+        hovermode: "closest",
+        xaxis: { title: "OTU IDs" },
+        yaxis: { title: "Sample Values" }
+        };
+
+    Plotly.newPlot("bubble", chartdata, layout);
 }
 
-// optionChanged function does what happens when you change the number in the selection box
 function optionChanged(selectedID) {
-    updateDashboard(selectedID);
-}
 
-// init function should populate subject IDs and then act as if the user selected the first ID
+    d3.json(URL).then(function(data) {
+        subject_data = getData(data);
+        console.log(subject_data);
+        buildBarChart(subject_data.selectedData);
+        buildBubbleChart(subject_data.selectedData);
+        buildDemogPane(subject_data.selectedMeta);
+    }); 
+
+  
+    function getData(data) {
+       // make this take in the data and the ID and return metadata & sample
+
+        console.log("getting data with selectedID as" + selectedID);
+        let selectedData = data.samples.filter(sample => sample.id == selectedID)[0];
+        let selectedMeta = data.metadata.filter(metadata => metadata.id == selectedID)[0];
+
+        return {selectedData, selectedMeta};
+    }
+
+}
 
 function init(data) {
     let subjectIDs = data.names;
     let selectedID = data.names[0];
+
     // make the dropdown menu with subjectIDs in it
-    storeBBData(data); // call this function to do all the other data setup we need
-    console.log("going to updateDashboard() with selectedID as" + selectedID)
-    updateDashboard(selectedID);
-}
+    selector = d3.select("#selDataset");
+    for (id in subjectIDs) {
+        selector.append("option").attr("value", data.names[id]).text(data.names[id]);
+    }
 
-// updates the dashboard -- should happen whenever the selection in the box changes
-
-function updateDashboard(selectedID) {
-    
-    // I thiiiink it makes the most sense to simply call each function here and
-    // pull the properties needed for each individual function inside that function rather
-    // than in a separate function or in this one.  I think.
-
+    console.log("going to optionChanged() with selectedID as" + selectedID)
+    optionChanged(selectedID);
 }
 
 d3.json(URL).then(init);
 console.log("Init")
+
+d3.selectAll("#selDataset").on("change", optionChanged);
+
 // data in json
 // names == same as 'id' in metadata
 // metadata -> id, ethnicity, gender, age, location, bbtype, wfreq

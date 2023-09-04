@@ -64,6 +64,8 @@ function updateDashboard(selectedID) {
         let otuIDs = selectedData[0].otu_ids;
         let otuLabels = selectedData[0].otu_labels;
 
+        let 
+
         buildBarChart(sampleValues, otuIDs, otuLabels);
         // console.log(`Sample values for ${selectedID}: ${sampleValues}`)
     }
